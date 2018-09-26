@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/radian/radian_ws/src/force_observer/cmake-build-debug/devel/setup.sh

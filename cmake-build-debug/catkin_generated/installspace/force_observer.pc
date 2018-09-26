@@ -1,0 +1,8 @@
+prefix=/usr/local
+
+Name: force_observer
+Description: Description of force_observer
+Version: 0.0.0
+Cflags: -I/usr/local/include
+Libs: -L/usr/local/lib -lforce_observer
+Requires: roscpp
