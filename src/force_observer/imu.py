@@ -3,6 +3,7 @@ import rospy
 import numpy as np
 import tf
 import std_msgs.msg
+import geometry_msgs.msg as gm
 import math as mt
 import tf
 import csv
@@ -11,7 +12,7 @@ class Imu:
     def __init__(self):
         self.name = "IMU"
         self.sub = rospy.Subscriber('/accel', std_msgs.msg.Int16MultiArray, self.callback)
-        self.pub = rospy.Publisher('/accel_calibrated', std_msgs.msg.Int16MultiArray, queue_size=1)
+        self.pub = rospy.Publisher('/accel_calibrated', gm.Accel, queue_size=1)
 
         self.avg_data_pts = 0
 
@@ -32,6 +33,8 @@ class Imu:
 
         self.offsets = []
 
+        self.new_msg = gm.Accel()
+
     def setup_calibrate(self, avg_data_points):
         self.avg_data_pts = avg_data_points
 
@@ -43,19 +46,22 @@ class Imu:
         y = self.data[1:4] - self.offsets[-3:]
 
         A = np.matrix([self.offsets[0:3], self.offsets[3:6], self.offsets[6:9]])
-        x = np.linalg.inv(A) * y
+        A = np.transpose(A)
+        x = np.matmul(np.linalg.inv(A), y)
 
-        new_msg = self.msg
-        new_msg.data = [new_msg.data[0], x, new_msg.data[4:]]
+        #print(self.offsets[0:3])
 
-        self.pub.Publish(new_msg)
+        self.new_msg.linear.x = x[0, 0]
+        self.new_msg.linear.y = x[0, 1]
+        self.new_msg.linear.z = x[0, 2]
+
+        self.pub.publish(self.new_msg)
 
     def callback(self, msg):
         scale = 8.0 * 9.81 / 32767.0
         self.data = np.array(msg.data, dtype=float)
         self.data[1:] = self.data[1:] * scale
-
-        self.msg = msg
+        #print(self.data)
 
     def set_data(self, R1):
         x = np.matmul(R1[0:3, 0:3], self.g)
@@ -107,6 +113,11 @@ class Imu:
     def solve_LS(self):
         self.G = np.matmul(np.linalg.pinv(self.Xb), self.Yb)
         print("offset values", self.G)
+
+        res = np.linalg.norm(self.Yb - np.matmul(self.Xb, self.G))
+
+        print(res)
+
         self.make_csv()
 
     def make_csv(self):

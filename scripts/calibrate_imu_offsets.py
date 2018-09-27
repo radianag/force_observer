@@ -14,10 +14,10 @@ if __name__ == '__main__':
     ctrl_rate = 100       # [Hz]
     stabil_ts = 2 #[sec]
     
-    q1_num_pts = 4
-    q2_num_pts = 4
+    q1_num_pts = 5
+    q2_num_pts = 5
 
-    limit = [(-1.54, 1.54), (-0.5, 0.5)]
+    limit = [(-1.54, 1.54), (-0.8, 0.8)]
     q3_pos = 0.05
 
     r = rospy.Rate(ctrl_rate)
@@ -37,21 +37,21 @@ if __name__ == '__main__':
     yaw = 1
     pitch = 1.54
 
-    state1 = np.linspace(0,q1_num_pts-1,q1_num_pts, dtype=int)
-    state2 = np.linspace(0,q2_num_pts-1,q2_num_pts, dtype=int)
+    state1 = np.linspace(0, q1_num_pts-1, q1_num_pts, dtype=int)
+    state2 = np.linspace(0, q2_num_pts-1, q2_num_pts, dtype=int)
 
-    flat_state= [(0,0)]* num_points
+    flat_state = [(0, 0)] * num_points
     for i in range(q1_num_pts):
         for j in range(q2_num_pts):
-            flat_state[(i)*q2_num_pts+j] = (state1[i], state2[j])
+            flat_state[i * q2_num_pts+j] = (state1[i], state2[j])
     print(traj_q1)
 
     a = [0, 0]
     while (imu.state < num_points) and not rospy.is_shutdown():
 
         if imu.avg_cnt == 0:
-            p.move_joint_some(np.array([traj_q1[flat_state[imu.state][0]], traj_q2[flat_state[imu.state][1]], q3_pos]),np.array([0, 1, 2]))
-            rospy.sleep(5)
+            p.move_joint_some(np.array([traj_q1[flat_state[imu.state][0]], traj_q2[flat_state[imu.state][1]], q3_pos]), np.array([0, 1, 2]))
+            rospy.sleep(6)
         a = p.get_current_joint_position()[0:2]
         yaw = a[0]
         pitch = a[1]

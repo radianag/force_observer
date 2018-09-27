@@ -7,12 +7,13 @@ from force_observer.imu import Imu
 if __name__ == '__main__':
 	
     name =  'test_offset'
+    offset_name = 'imu_offsets'
     ctrl_rate = 100
 
     rospy.init_node(name, anonymous=True)
     r = rospy.Rate(ctrl_rate)
 
-	offsets = np.genfromtxt(name + '.csv', delimiter=',')
+    offsets = np.genfromtxt(offset_name + '.csv', delimiter=',')
 
     imu = Imu()
     imu.setup_calibrated_publisher(offsets)
