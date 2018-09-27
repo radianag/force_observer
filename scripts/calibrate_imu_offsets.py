@@ -1,15 +1,11 @@
 #!/usr/bin/env python
 
-#  Finds transformation matrix for 3 optical markers attached to the mount to calibrate
-#  dvrk-psm-force-feedback device
-# gives transformation_matrix.txt and transformation_matrix.npz files as an output
-
 import rospy
 import numpy as np
 import tf
 import csv
 import dvrk
-#import rospkg
+
 import std_msgs.msg
 import math as mt
 import tf
@@ -20,6 +16,7 @@ class Imu:
         self. sub = rospy.Subscriber('/accel', std_msgs.msg.Int16MultiArray, self.callback)
 
         self.avg_data_pts = avg_data_points
+
         #Least Squares stuff
         self.Xb = np.zeros([3, 12])
         self.x_array = np.zeros([1, 3])
@@ -39,20 +36,17 @@ class Imu:
         scale = 8.0 * 9.81 / 32767.0 
         self.data = np.array(msg.data, dtype=float)
         self.data[1:] = self.data[1:] *scale
-        
-        #print(self.data)
 
     def set_data(self, R1):
         x = np.matmul(R1[0:3, 0:3], self.g)
         if self.avg_cnt == 0:
             self.x_array[0] = x
             self.y_array[0] = np.array([self.data[1], self.data[2], self.data[3]])
-            #print(self.y_array)
+          
         else:
             self.x_array = np.concatenate((self.x_array, [x]), axis=0)
             self.y_array = np.concatenate((self.y_array, [[self.data[1], self.data[2], self.data[3]]]), axis=0)
-        #print("data", self.y_array)
-        #print(self.x_array)
+ 
         self.avg_cnt += 1
 
     def make_X(self, x):
@@ -90,7 +84,6 @@ class Imu:
             X = self.make_X(avg_x)
             self.concatenate_Xb(X, avg_y)
 
-
     def solve_LS(self):
         self.G = np.matmul(np.linalg.pinv(self.Xb),self.Yb)
         print("offset values", self.G)
@@ -125,20 +118,8 @@ if __name__ == '__main__':
     p.home()
     imu = Imu(ctrl_rate*stabil_ts)
 
-    # a = p.get_current_joint_position()[0:3]
-    #yaw = a[0]
-    # pitch = a[1]
-
     yaw = 1
     pitch = 1.54
-    #R1 = tf.transformations.euler_matrix(yaw, pitch, 0, 'syxz')
-    
-    #imu.set_data(R1)
-    #X = imu.make_X(imu.x_array[0])
-
-    #imu.concatenate_Xb(X, [1, 2, 3])
-    #imu.concatenate_Xb(X, [1, 2, 3])
-    #imu.concatenate_Xb(X, [1, 2, 3])
 
     state1 = np.linspace(0,q1_num_pts-1,q1_num_pts, dtype=int)
     state2 = np.linspace(0,q2_num_pts-1,q2_num_pts, dtype=int)
