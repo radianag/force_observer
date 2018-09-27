@@ -48,3 +48,6 @@ target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
 #add_executable(run_observer src/run_observer.cpp)
 #target_link_libraries(run_observer force_observer)
+
+
+catkin_python_setup()
