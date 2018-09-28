@@ -723,8 +723,8 @@ void setup()
   // should read a '1'.
   // That bit has to be cleared, since the sensor
   // is in sleep mode at power-up. 
- /* error = MPU6050_read (MPU6050_PWR_MGMT_1, &c, 1);
-  Serial.print(F("PWR_MGMT_1 : "));
+ error = MPU6050_read (MPU6050_PWR_MGMT_1, &c, 1);
+ /* Serial.print(F("PWR_MGMT_1 : "));
   Serial.print(c,HEX);
   Serial.print(F(", error = "));
   Serial.println(error,DEC); */

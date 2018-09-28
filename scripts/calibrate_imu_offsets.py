@@ -7,6 +7,14 @@ import tf
 import dvrk
 from force_observer.imu import Imu
 
+def modified_dh(_dh_alpha, _dh_a, _dh_d, _dh_theta):
+    A = np.matrix([[m.cos(_dh_theta), -m.sin(_dh_theta), 0, _dh_a],
+    [m.sin(_dh_theta) * m.cos(_dh_alpha), m.cos(_dh_theta) * m.cos(_dh_alpha), -m.sin(_dh_alpha), -m.sin(_dh_alpha) * _dh_d],
+    [m.sin(_dh_theta) * m.sin(_dh_alpha), m.cos(_dh_theta) * m.sin(_dh_alpha), m.cos(_dh_alpha), m.cos(_dh_alpha) * _dh_d],
+    [0, 0, 0, 1]])
+
+    return A 
+
 if __name__ == '__main__':
     rospy.init_node('calibration', anonymous=True)
 
@@ -34,8 +42,8 @@ if __name__ == '__main__':
     imu = Imu()
     imu.setup_calibrate(ctrl_rate*stabil_ts)
 
-    yaw = 1
-    pitch = 1.54
+    #yaw = 1
+    #pitch = 1.54
 
     state1 = np.linspace(0, q1_num_pts-1, q1_num_pts, dtype=int)
     state2 = np.linspace(0, q2_num_pts-1, q2_num_pts, dtype=int)
@@ -55,7 +63,8 @@ if __name__ == '__main__':
         a = p.get_current_joint_position()[0:2]
         yaw = a[0]
         pitch = a[1]
-        R1 = tf.transformations.euler_matrix(yaw, pitch, 0, 'syxz')
+        R1 = modified_dh(np.pi/2, 0, 0, yaw + np.pi/2) * modified_dh(-np.pi/2, 0, 0, pitch - np.pi/2)
+        #R1 = tf.transformations.euler_matrix(yaw, pitch, 0, 'syxz')
         imu.set_data(R1)
         imu.get_avg()
         r.sleep()
