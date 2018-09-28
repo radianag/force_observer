@@ -65,12 +65,13 @@ class Imu:
 
     def set_data(self, R1):
         x = np.matmul(R1[0:3, 0:3], self.g)
+    
         if self.avg_cnt == 0:
             self.x_array[0] = x
             self.y_array[0] = np.array([self.data[1], self.data[2], self.data[3]])
 
         else:
-            self.x_array = np.concatenate((self.x_array, [x]), axis=0)
+            self.x_array = np.concatenate((self.x_array, x), axis=0)
             self.y_array = np.concatenate((self.y_array, [[self.data[1], self.data[2], self.data[3]]]), axis=0)
 
         self.avg_cnt += 1
@@ -107,7 +108,8 @@ class Imu:
             self.avg_cnt = 0
             self.x_array = np.zeros([1, 3])
             self.y_array = np.zeros([1, 3])
-            X = self.make_X(avg_x)
+            #print(avg_x[0][:])
+            X = self.make_X(np.array([avg_x[0,0],avg_x[0,1],avg_x[0,2]]))
             self.concatenate_Xb(X, avg_y)
 
     def solve_LS(self):
