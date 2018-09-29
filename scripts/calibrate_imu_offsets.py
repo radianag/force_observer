@@ -22,8 +22,8 @@ if __name__ == '__main__':
     ctrl_rate = 100       # [Hz]
     stabil_ts = 2 #[sec]
     
-    q1_num_pts = 5
-    q2_num_pts = 5
+    q1_num_pts = 8
+    q2_num_pts = 8
 
     limit = [(-1.54, 1.54), (-0.8, 0.8)]
     q3_pos = 0.05
@@ -59,13 +59,14 @@ if __name__ == '__main__':
 
         if imu.avg_cnt == 0:
             p.move_joint_some(np.array([traj_q1[flat_state[imu.state][0]], traj_q2[flat_state[imu.state][1]], q3_pos]), np.array([0, 1, 2]))
-            rospy.sleep(6)
+            rospy.sleep(5)
         a = p.get_current_joint_position()[0:2]
         yaw = a[0]
         pitch = a[1]
         R1 = modified_dh(np.pi/2, 0, 0, yaw + np.pi/2) * modified_dh(-np.pi/2, 0, 0, pitch - np.pi/2)
         #R1 = tf.transformations.euler_matrix(yaw, pitch, 0, 'syxz')
-        imu.set_data(R1)
+        R2 = R1[0:3][0:3].transpose()
+        imu.set_data(R2)
         imu.get_avg()
         r.sleep()
 

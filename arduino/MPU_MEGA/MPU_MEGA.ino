@@ -823,6 +823,10 @@ void loop()
   msg_accel.angular.y = accel_t_gyro.value.y_gyro;
   msg_accel.angular.z = accel_t_gyro.value.z_gyro; */
 
+  //Filter
+  
+
+
 
   int16_t a[7];
 
