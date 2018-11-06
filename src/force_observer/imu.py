@@ -64,8 +64,10 @@ class Imu:
         #print(self.data)
 
     def set_data(self, R1):
+        #print(R1)
+        #print(self.g)
         x = np.matmul(R1[0:3, 0:3], self.g)
-    
+        #print(x)
         if self.avg_cnt == 0:
             self.x_array[0] = x
             self.y_array[0] = np.array([self.data[1], self.data[2], self.data[3]])
@@ -85,6 +87,7 @@ class Imu:
             else:
                 X = np.concatenate((X, R[i]), axis=1)
         X = np.concatenate((X, np.eye(3)), axis=1)
+        #print(X)
         return X
 
     def concatenate_Xb(self, X, y):
@@ -94,8 +97,8 @@ class Imu:
         else:
             self.Xb = np.concatenate((self.Xb, X), axis=0)
             self.Yb = np.concatenate((self.Yb, y))
-        print("XB", np.shape(self.Xb), np.shape(self.Yb))
-        print("Yb", self.Yb)
+        print("shapes", np.shape(self.Xb), np.shape(self.Yb))
+        #print("Yb", self.Yb)
 
     def get_avg(self):
         if self.avg_cnt > self.avg_data_pts:
@@ -116,7 +119,7 @@ class Imu:
         self.G = np.matmul(np.linalg.pinv(self.Xb), self.Yb)
         print("offset values", self.G)
 
-        res = np.linalg.norm(self.Yb - np.matmul(self.Xb, self.G))
+        res = np.mean(np.abs(self.Yb - np.matmul(self.Xb, self.G)))
 
         print(res)
 
