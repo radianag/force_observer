@@ -1,4 +1,4 @@
-// MPU-6050 Accelerometer + Gyro
+ // MPU-6050 Accelerometer + Gyro
 // -----------------------------
 //
 // By arduino.cc user "Krodal".
@@ -838,27 +838,18 @@ void loop()
   msg_accel.angular.y = accel_t_gyro.value.y_gyro;
   msg_accel.angular.z = accel_t_gyro.value.z_gyro; */
 
-<<<<<<< HEAD:arduino/MPU_MEGA.ino
   x_arr[filter_count] = accel_t_gyro.value.x_accel;
   //Serial.println(x_arr[filter_count]);
   y_arr[filter_count] = accel_t_gyro.value.y_accel;
   z_arr[filter_count] = accel_t_gyro.value.z_accel;
-=======
+
   //Filter
-  
-
-
->>>>>>> 851432149aa9162567ba4836729a549372be22f8:arduino/MPU_MEGA/MPU_MEGA.ino
-
   filter_count++;
-
   if (filter_count>=filter_num) {
     filter_count = 0;
     filter_start = true;
   }
   
-  
-
   if (filter_start == true) {
     sum_x = 0;
     sum_y = 0;
