@@ -1,4 +1,4 @@
-// MPU-6050 Accelerometer + Gyro
+ // MPU-6050 Accelerometer + Gyro
 // -----------------------------
 //
 // By arduino.cc user "Krodal".
@@ -690,6 +690,20 @@ void message_cb(const std_msgs::String &msg) {
 ros::Subscriber<std_msgs::String> s("set_offsets", message_cb);
 ros::Publisher pa("accel", &msg_accel);
 
+int16_t a[7];
+
+
+int32_t sum_x = 0; 
+int32_t sum_y = 0;
+int32_t sum_z = 0;
+
+const int filter_num = 10;
+int filter_count = 0;
+bool filter_start = false;
+
+int16_t x_arr[filter_num];
+int16_t y_arr[filter_num];
+int16_t z_arr[filter_num];
 
 void setup()
 {      
@@ -697,7 +711,7 @@ void setup()
   uint8_t c;
 
 
- /* Serial.begin(1);
+/*  Serial.begin(1);
   Serial.println(F("InvenSense MPU-6050"));
   Serial.println(F("June 2012")); */
 
@@ -723,8 +737,8 @@ void setup()
   // should read a '1'.
   // That bit has to be cleared, since the sensor
   // is in sleep mode at power-up. 
- /* error = MPU6050_read (MPU6050_PWR_MGMT_1, &c, 1);
-  Serial.print(F("PWR_MGMT_1 : "));
+ error = MPU6050_read (MPU6050_PWR_MGMT_1, &c, 1);
+ /* Serial.print(F("PWR_MGMT_1 : "));
   Serial.print(c,HEX);
   Serial.print(F(", error = "));
   Serial.println(error,DEC); */
@@ -749,7 +763,8 @@ void loop()
   double dT;
   accel_t_gyro_union accel_t_gyro;
 
-
+ 
+  
  // Serial.println(F(""));
   //Serial.println(F("MPU-6050"));
 
@@ -823,12 +838,33 @@ void loop()
   msg_accel.angular.y = accel_t_gyro.value.y_gyro;
   msg_accel.angular.z = accel_t_gyro.value.z_gyro; */
 
+  x_arr[filter_count] = accel_t_gyro.value.x_accel;
+  //Serial.println(x_arr[filter_count]);
+  y_arr[filter_count] = accel_t_gyro.value.y_accel;
+  z_arr[filter_count] = accel_t_gyro.value.z_accel;
 
-  int16_t a[7];
+  //Filter
+  filter_count++;
+  if (filter_count>=filter_num) {
+    filter_count = 0;
+    filter_start = true;
+  }
+  
+  if (filter_start == true) {
+    sum_x = 0;
+    sum_y = 0;
+    sum_z = 0;
+    
+    for(int i = 0 ; i < filter_num; ++i) {
+         sum_x = sum_x + x_arr[i];
+         sum_y = sum_y + y_arr[i];
+         sum_z = sum_z + z_arr[i];
+    }
+  }
 
-  a[1] = accel_t_gyro.value.x_accel;
-  a[2] = accel_t_gyro.value.y_accel;
-  a[3] = accel_t_gyro.value.z_accel;
+  a[1] = sum_x/filter_num;
+  a[2] = sum_y/filter_num;
+  a[3] = sum_z/filter_num;
   a[4] = accel_t_gyro.value.x_gyro;
   a[5] = accel_t_gyro.value.y_gyro;
   a[6] = accel_t_gyro.value.z_gyro;

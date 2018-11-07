@@ -34,17 +34,20 @@ include_directories(
 
 
 
-set(SRC_FILES
-        src/observer.cpp
-        src/imu.cpp
- )
-set(HDR_FILES
-        include/force_observer/observer.h
-        include/force_observer/imu.h
-     )
+#set(SRC_FILES
+        #src/observer.cpp
+        #src/imu.cpp
+ #)
+#set(HDR_FILES
+        #include/force_observer/observer.h
+        #include/force_observer/imu.h
+     #)
 
-add_library(${PROJECT_NAME} ${SRC_FILES} ${HDR_FILES})
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
+#add_library(${PROJECT_NAME} ${SRC_FILES} ${HDR_FILES})
+#target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
 #add_executable(run_observer src/run_observer.cpp)
 #target_link_libraries(run_observer force_observer)
+
+
+catkin_python_setup()
