@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 import rospy
 import numpy as np
@@ -8,7 +9,7 @@ import math as mt
 import tf
 import csv
 
-class Imu:
+class ImuDataProcessing:
     def __init__(self):
         self.name = "IMU"
         self.sub = rospy.Subscriber('/accel', std_msgs.msg.Int16MultiArray, self.callback)

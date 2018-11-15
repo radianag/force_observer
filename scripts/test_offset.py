@@ -2,10 +2,9 @@
 
 import rospy
 import numpy as np
-from force_observer.imu import Imu
+from force_observer.imu_data_processing import ImuDataProcessing
 
 if __name__ == '__main__':
-	
     name =  'test_offset'
     offset_name = 'imu_offsets'
     ctrl_rate = 100
@@ -15,7 +14,7 @@ if __name__ == '__main__':
 
     offsets = np.genfromtxt(offset_name + '.csv', delimiter=',')
 
-    imu = Imu()
+    imu = ImuDataProcessing()
     imu.setup_calibrated_publisher(offsets)
 
     while not rospy.is_shutdown():

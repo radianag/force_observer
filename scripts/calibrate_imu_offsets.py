@@ -5,7 +5,7 @@ import numpy as np
 import tf
 import math as m
 import dvrk
-from force_observer.imu import Imu
+from force_observer.imu_data_processing import ImuDataProcessing
 
 def modified_dh(_dh_alpha, _dh_a, _dh_d, _dh_theta):
     A = np.matrix([[m.cos(_dh_theta), -m.sin(_dh_theta), 0, _dh_a],
@@ -35,11 +35,12 @@ if __name__ == '__main__':
 
     num_points = q1_num_pts*q2_num_pts
 
+
     p = dvrk.psm('PSM1')
     p.home()
     rospy.sleep(1)
 
-    imu = Imu()
+    imu = ImuDataProcessing()
     imu.setup_calibrate(ctrl_rate*stabil_ts)
 
     #yaw = 1
