@@ -5,15 +5,9 @@ import numpy as np
 import tf
 import math as m
 import dvrk
-from force_observer.imu_data_processing import ImuDataProcessing
+from force_observer.calibrate_imu_offset import CalibrateImuOffset
+from force_observer.utils import *
 
-def modified_dh(_dh_alpha, _dh_a, _dh_d, _dh_theta):
-    A = np.matrix([[m.cos(_dh_theta), -m.sin(_dh_theta), 0, _dh_a],
-    [m.sin(_dh_theta) * m.cos(_dh_alpha), m.cos(_dh_theta) * m.cos(_dh_alpha), -m.sin(_dh_alpha), -m.sin(_dh_alpha) * _dh_d],
-    [m.sin(_dh_theta) * m.sin(_dh_alpha), m.cos(_dh_theta) * m.sin(_dh_alpha), m.cos(_dh_alpha), m.cos(_dh_alpha) * _dh_d],
-    [0, 0, 0, 1]])
-
-    return A 
 
 if __name__ == '__main__':
     rospy.init_node('calibration', anonymous=True)
@@ -26,7 +20,7 @@ if __name__ == '__main__':
     # The combined Axis is not good
 
     q1_num_pts = 3
-    q2_num_pts = 12
+    q2_num_pts = 3
 
     limit = [(-1.54, 1.54), (-0.8, 0.8)]
     q3_pos = 0.05
@@ -43,7 +37,7 @@ if __name__ == '__main__':
     p.home()
     rospy.sleep(1)
 
-    imu = ImuDataProcessing()
+    imu = CalibrateImuOffset()
     imu.setup_calibrate(ctrl_rate*stabil_ts)
 
     #yaw = 1

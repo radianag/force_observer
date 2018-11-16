@@ -5,7 +5,7 @@ import dvrk
 import numpy as np
 import geometry_msgs.msg as gm
 import matplotlib.pyplot as plt
-from force_observer.calibrate_position import CalibratePosition
+from force_observer.calibrate_imu_position import CalibrateImuPosition
 from force_observer.interpolation import Interpolation
 
 if __name__ == '__main__':
@@ -14,7 +14,7 @@ if __name__ == '__main__':
 
     accel_name = '/accel_calibrated'
     robot_joint_topic = '/dvrk/PSM1/state_joint_current'
-    test = CalibratePosition(accel_name, robot_joint_topic)
+    test = CalibrateImuPosition(accel_name, robot_joint_topic)
 
     p = dvrk.psm('PSM1')
     p.home()
@@ -31,18 +31,19 @@ if __name__ == '__main__':
     rospy.sleep(1)
 
     case_num = 3
-    trial_num = 2
+    trial_num = 6
 
     interp = Interpolation()
 
     # Trajectory
-    num_pts = 350
     v0 = [0.0]
     vf = [0.0]
     a0 = [0.0]
     af = [0.0]
     t0 = 0.0
-    tf = 5
+
+    tf_array = [3, 1.5]
+    num_pts = np.multiply(tf_array, ctrl_rate)
 
     case_i = 0
     count = 0
@@ -55,8 +56,8 @@ if __name__ == '__main__':
                 p0 = [limit[case_i][1]]
                 pf = [limit[case_i][0]]
 
-            interp.compute_interpolation_params(p0, pf, v0, vf, a0, af, t0, tf)
-            t = np.linspace(0, tf, num_pts)
+            interp.compute_interpolation_params(p0, pf, v0, vf, a0, af, t0, tf_array[case_i])
+            t = np.linspace(0, tf_array[case_i], num_pts[case_i])
             pos = interp.get_interpolated_x(t)
 
             if case_i == 0:
@@ -64,7 +65,7 @@ if __name__ == '__main__':
             else:
                 p.move_joint_some(np.array([0, pos[0, 0], 0]), np.array([0, 1, 2]))
 
-            for i in range(num_pts):
+            for i in range(num_pts[case_i].astype(int)):
                 if case_i == 0:
                     p.move_joint_some(np.array([pos[0, i], 0]), np.array([0, 1]), interpolate=False, blocking=False)
                 else:
@@ -82,7 +83,8 @@ if __name__ == '__main__':
     vf = [ 0.0, 0.0]
     a0 = [ 0.0, 0.0]
     af = [ 0.0, 0.0]
-
+    tf = tf_array[1]
+    num_pts = np.multiply(tf, ctrl_rate)
     for j in range(trial_num):
         if count % 2 == 0:
             p0 = [limit[0][0], limit[1][0]]
@@ -97,18 +99,17 @@ if __name__ == '__main__':
 
         p.move_joint_some(np.array([pos[0, 0], pos[1, 0], 0]), np.array([0, 1, 2]))
 
-        for i in range(num_pts):
+        for i in range(num_pts.astype(int)):
             p.move_joint_some(np.array([pos[0, i], pos[1, i]]), np.array([0, 1]), interpolate=False, blocking=False)
             test.take_data(case_i)
             r.sleep()
 
         count = count + 1
 
-
-    test.solve_case(0)
-    print('case_dist',0,test.case_distance)
-    test.solve_case(1)
-    test.solve_case(2)
+    threshold = 0.8
+    test.solve_case(0, threshold)
+    test.solve_case(1, threshold)
+    test.solve_case(2, threshold)
     test.solve_poses()
     print(test.imu_distance)
 
