@@ -2,11 +2,11 @@
 
 import rospy
 import numpy as np
-import tf
+import math as m
 import std_msgs.msg
 import geometry_msgs.msg as gm
-import math as mt
-import tf
+import sensor_msgs.msg  as sm
+
 import csv
 
 class ImuDataProcessing:
@@ -14,6 +14,8 @@ class ImuDataProcessing:
         self.name = "IMU"
         self.sub = rospy.Subscriber('/accel', std_msgs.msg.Int16MultiArray, self.callback)
         self.pub = rospy.Publisher('/accel_calibrated', gm.Accel, queue_size=1)
+        self.sub_dvrk = rospy.Subscriber('/dvrk/PSM1/state_joint_current', sm.JointState, self.callback_joint_robot)
+
 
         self.avg_data_pts = 0
 
@@ -36,6 +38,17 @@ class ImuDataProcessing:
 
         self.new_msg = gm.Accel()
 
+        self.robot_joint_pos = np.zeros(2)
+
+    def callback_joint_robot(self, msg):
+        self.robot_joint_pos = msg.position[0:2]
+
+    def delete_gravity(self, x):
+        R1 = self.modified_dh(np.pi/2, 0, 0, self.robot_joint_pos[0] + np.pi/2) * self.modified_dh(-np.pi/2, 0, 0, self.robot_joint_pos[1] - np.pi/2)
+        grav = np.matmul(R1.transpose(), np.array([0, 0, -9.81, 1]))
+        x = np.subtract(x, grav[0, 0:3])
+        return x
+
     def setup_calibrate(self, avg_data_points):
         self.avg_data_pts = avg_data_points
 
@@ -44,13 +57,14 @@ class ImuDataProcessing:
         self.offsets = offsets
 
     def publish_calibrated(self):
+
         y = self.data[1:4] - self.offsets[-3:]
 
         A = np.matrix([self.offsets[0:3], self.offsets[3:6], self.offsets[6:9]])
         A = np.transpose(A)
         x = np.matmul(np.linalg.inv(A), y)
 
-        #print(self.offsets[0:3])
+        #x = self.delete_gravity(x[0, 0:3])
 
         self.new_msg.linear.x = x[0, 0]
         self.new_msg.linear.y = x[0, 1]
@@ -130,3 +144,11 @@ class ImuDataProcessing:
         with open('imu_offsets.csv', 'wb') as myfile:
             wr = csv.writer(myfile, quoting=csv.QUOTE_NONE)
             wr.writerow(self.G)
+
+    def modified_dh(self, _dh_alpha, _dh_a, _dh_d, _dh_theta):
+        A = np.matrix([[m.cos(_dh_theta), -m.sin(_dh_theta), 0, _dh_a],
+        [m.sin(_dh_theta) * m.cos(_dh_alpha), m.cos(_dh_theta) * m.cos(_dh_alpha), -m.sin(_dh_alpha), -m.sin(_dh_alpha) * _dh_d],
+        [m.sin(_dh_theta) * m.sin(_dh_alpha), m.cos(_dh_theta) * m.sin(_dh_alpha), m.cos(_dh_alpha), m.cos(_dh_alpha) * _dh_d],
+        [0, 0, 0, 1]])
+
+        return A

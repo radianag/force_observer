@@ -53,7 +53,7 @@ class CalibratePosition:
         self.robot_joint_accel = np.subtract(self.robot_joint_velocity,self.robot_joint_velocity_min1)
 
     def _delete_gravity(self):
-        self.robot_joint_accel = self.robot_joint_accel - self.robot_joint_pos
+        x = 0
 
     def take_data(self, case_num):
         self._delete_gravity()

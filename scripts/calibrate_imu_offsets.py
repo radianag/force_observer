@@ -21,9 +21,12 @@ if __name__ == '__main__':
     #Settings
     ctrl_rate = 100       # [Hz]
     stabil_ts = 2 #[sec]
-    
-    q1_num_pts = 8
-    q2_num_pts = 8
+
+    # Calibrate to the principal axis of the IMU,
+    # The combined Axis is not good
+
+    q1_num_pts = 3
+    q2_num_pts = 12
 
     limit = [(-1.54, 1.54), (-0.8, 0.8)]
     q3_pos = 0.05
@@ -60,10 +63,12 @@ if __name__ == '__main__':
 
         if imu.avg_cnt == 0:
             p.move_joint_some(np.array([traj_q1[flat_state[imu.state][0]], traj_q2[flat_state[imu.state][1]], q3_pos]), np.array([0, 1, 2]))
-            rospy.sleep(5.5)
+            rospy.sleep(4)
         a = p.get_current_joint_position()[0:2]
         yaw = a[0]
         pitch = a[1]
+
+        # FRAME 3 Main Insertion
         R1 = modified_dh(np.pi/2, 0, 0, yaw + np.pi/2) * modified_dh(-np.pi/2, 0, 0, pitch - np.pi/2)
         #R1 = tf.transformations.euler_matrix(yaw, pitch, 0, 'syxz')
         R2 = R1[0:3][0:3].transpose()
