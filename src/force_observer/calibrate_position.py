@@ -20,7 +20,7 @@ class CalibratePosition:
         self.robot_joint_topic = robot_joint_topic
 
         self.sub_imu = rospy.Subscriber(self.accel_name, gm.Accel, self.callback_imu_calibrated)
-        self.sub_dvrk = rospy.Subscriber(self.robot_joint_topic, sm.JointState, self.callback_imu_calibrated)
+        self.sub_dvrk = rospy.Subscriber(self.robot_joint_topic, sm.JointState, self.callback_joint_robot)
 
         self.imu_accel = np.zeros(3)
         self.robot_joint_pos = np.zeros(2)
@@ -50,7 +50,7 @@ class CalibratePosition:
         # This is making the Calibration code dependent
         self.robot_joint_velocity_min1 = self.robot_joint_velocity
         self.robot_joint_velocity = msg.velocity[0:2]
-        self.robot_joint_accel = self.robot_joint_velocity - self.robot_joint_velocity_min1
+        self.robot_joint_accel = np.subtract(self.robot_joint_velocity,self.robot_joint_velocity_min1)
 
     def _delete_gravity(self):
         self.robot_joint_accel = self.robot_joint_accel - self.robot_joint_pos

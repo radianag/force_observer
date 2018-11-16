@@ -747,7 +747,7 @@ void setup()
   // Clear the 'sleep' bit to start the sensor.
   MPU6050_write_reg (MPU6050_PWR_MGMT_1, 0);
  
-  MPU6050_write_reg (MPU6050_ACCEL_CONFIG , MPU6050_AFS_SEL_8G);
+  MPU6050_write_reg (MPU6050_ACCEL_CONFIG , MPU6050_AFS_SEL_2G);
 
     //nh.getHardware()->setBaud(115200);
     nh.getHardware()->setBaud(230400);

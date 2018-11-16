@@ -59,7 +59,7 @@ class ImuDataProcessing:
         self.pub.publish(self.new_msg)
 
     def callback(self, msg):
-        scale = 8.0 * 9.81 / 32767.0
+        scale = 2.0 * 9.81 / 32767.0
         self.data = np.array(msg.data, dtype=float)
         self.data[1:] = self.data[1:] * scale
         #print(self.data)

@@ -60,7 +60,7 @@ if __name__ == '__main__':
 
         if imu.avg_cnt == 0:
             p.move_joint_some(np.array([traj_q1[flat_state[imu.state][0]], traj_q2[flat_state[imu.state][1]], q3_pos]), np.array([0, 1, 2]))
-            rospy.sleep(5)
+            rospy.sleep(5.5)
         a = p.get_current_joint_position()[0:2]
         yaw = a[0]
         pitch = a[1]
@@ -72,5 +72,4 @@ if __name__ == '__main__':
         r.sleep()
 
     imu.solve_LS()
-
-    rospy.spin()
+    print('test_done')
