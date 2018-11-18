@@ -60,7 +60,7 @@ if __name__ == '__main__':
         pitch = a[1]
 
         # FRAME 3 Main Insertion, This should be modular and encapsulated and saved in a main data of the user
-        R1 = modified_dh(np.pi/2, 0, 0, yaw + np.pi/2) * modified_dh(-np.pi/2, 0, 0, pitch - np.pi/2)
+        R1 = modified_dh(np.pi/2, 0, 0, yaw + np.pi/2) * modified_dh(-np.pi/2, 0, 0, pitch - np.pi/2) * modified_dh(np.pi/2, 0, 0, 0)
         #R1 = tf.transformations.euler_matrix(yaw, pitch, 0, 'syxz')
         R2 = R1[0:3][0:3].transpose()
         imu.set_data(R2)

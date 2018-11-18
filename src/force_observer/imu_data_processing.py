@@ -32,7 +32,7 @@ class ImuDataProcessing:
 
     def delete_gravity(self, x):
         # Dependent on the DH frame of the IMU, should be modular
-        R1 = modified_dh(np.pi/2, 0, 0, self.robot_joint_pos[0] + np.pi/2) * modified_dh(-np.pi/2, 0, 0, self.robot_joint_pos[1] - np.pi/2)
+        R1 = modified_dh(np.pi/2, 0, 0, self.robot_joint_pos[0] + np.pi/2) * modified_dh(-np.pi/2, 0, 0, self.robot_joint_pos[1] - np.pi/2) * modified_dh(np.pi/2, 0, 0, 0)
 
         grav = np.matmul(R1.transpose(), np.append(self.g, 1))
         x = np.subtract(x, grav[0, 0:3])

@@ -4,6 +4,7 @@ import rospy
 import numpy as np
 import std_msgs.msg
 import csv
+import rospkg
 
 class CalibrateImuOffset:
     def __init__(self):
@@ -27,7 +28,6 @@ class CalibrateImuOffset:
 
     def setup_calibrate(self, avg_data_points):
         self.avg_data_pts = avg_data_points
-
 
     def callback_imu(self, msg):
         #Hardcoded Gravity Scale
@@ -92,6 +92,8 @@ class CalibrateImuOffset:
         self._make_csv()
 
     def _make_csv(self):
-        with open('imu_offsets.csv', 'wb') as myfile:
+        rospack = rospkg.RosPack()
+        path = rospack.get_path('force_observer')
+        with open(path + '/' + 'imu_offsets.csv', 'wb') as myfile:
             wr = csv.writer(myfile, quoting=csv.QUOTE_NONE)
             wr.writerow(self.G)

@@ -12,21 +12,23 @@
 
 int main(int argc, char **argv)
 {
-
+    // Settings
+    int dof = 3;
     std::string imu_topic = "/accel_calibrated";
     std::string robot_topic = "/dvrk/PSM1/state_joint_current";
     std::string imu_pos_filename = "/data/imu_position.csv";
-    int dof = 3;
+    int sample_rate = 100;
 
+    // Ros Initializers
     ros::init(argc, argv, "force_observer_node");
-    ros::Rate node_rate(100);
+    ros::Rate node_rate(sample_rate);
 
+    // Observer Initializers
     ForceObserver observer_node = ForceObserver(imu_topic, robot_topic, dof);
     observer_node.setup_position(imu_pos_filename, 2, 3);
 
     while(ros::ok())
     {
-
         //observer_node.publish_force();
         ros::spinOnce();
         node_rate.sleep();
