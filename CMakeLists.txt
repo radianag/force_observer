@@ -32,22 +32,26 @@ include_directories(
         ${catkin_INCLUDE_DIRS}
 )
 
+set(SRC_FILES
+        src/force_observer.cpp
+        src/robot_dynamics.cpp
+        src/utils.cpp
+ )
 
+set(HDR_FILES
+        include/force_observer.h
+        include/robot_dynamics.h
+        include/utils.h
+     )
 
-#set(SRC_FILES
-        #src/observer.cpp
-        #src/imu.cpp
- #)
-#set(HDR_FILES
-        #include/force_observer/observer.h
-        #include/force_observer/imu.h
-     #)
+add_library(${PROJECT_NAME} ${SRC_FILES} ${HDR_FILES})
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
-#add_library(${PROJECT_NAME} ${SRC_FILES} ${HDR_FILES})
-#target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
+add_executable(test_node src/test.cpp)
+target_link_libraries(test_node force_observer)
 
-#add_executable(run_observer src/run_observer.cpp)
-#target_link_libraries(run_observer force_observer)
+add_executable(force_observer_node src/force_observer_node.cpp)
+target_link_libraries(force_observer_node force_observer)
 
 
 catkin_python_setup()
