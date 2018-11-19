@@ -13,8 +13,8 @@ ForceObserver::ForceObserver(const std::string imu_topic, const std::string robo
     robot_joint_vel.resize(dof);
     robot_joint_eff.resize(dof);
 
-    Ja_robot.resize(3, dof);
-    Jd_robot.resize(3, dof);
+    Ja_imu.resize(3, dof);
+    Jd_imu.resize(3, dof);
 
     N.resize(dof); Fr.resize(dof);
     M.resize(dof, dof), Ja_robot.resize(3, dof), Jd_robot.resize(3, dof);

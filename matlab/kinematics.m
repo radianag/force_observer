@@ -17,7 +17,7 @@ end
 
 %% Plot Joint Angles Test
 close all
-q_n = [0.0, 0.0, 0.0];  %Put your numeric values here
+q_n = [0.0, 0.5, 0.0];  %Put your numeric values here
 
 figure()
 imu_shape = size(imu.T);
@@ -32,6 +32,7 @@ for i = 1:dof
         hold on
 end
 
+imu.T_num=T_num;
 title('Plot transform Frames');
 xlabel('x');
 ylabel('y');

@@ -23,7 +23,7 @@ imu.Jd = subs(imu.Jd, q3t, q(3));
 
 %% Plot Jacobian
 p = pi();
-q_n = [0, 0, 0.1];
+q_n = [0.5, 0, 0.1];
 
 J3_num = subs(imu.Ja,q1,q_n(1));
 J3_num = subs(J3_num,q2,q_n(2));
