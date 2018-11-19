@@ -76,10 +76,15 @@ void ForceObserver::calculate_jacobian_imu() {
 
 void ForceObserver::calculate_dynamics() {
 
-    M = rbt_dynamics.CalcM(robot_joint_pos);
-    N = rbt_dynamics.CalcN(robot_joint_pos, robot_joint_vel);
-    Fr = rbt_dynamics.CalcFr(robot_joint_pos, robot_joint_vel);
+    M = rbt_dynamics.calcM(robot_joint_pos);
+    N = rbt_dynamics.calcN(robot_joint_pos, robot_joint_vel);
+    Fr = rbt_dynamics.calcFr(robot_joint_pos, robot_joint_vel);
 
+    Ja_imu = rbt_dynamics.calcJa_imu(robot_joint_pos);
+    Jd_imu = rbt_dynamics.calcJd_imu(robot_joint_pos, robot_joint_vel);
+
+    Ja_robot = rbt_dynamics.calcJa(robot_joint_pos);
+    Jd_robot = rbt_dynamics.calcJd(robot_joint_pos, robot_joint_vel);
 }
 
 Eigen::VectorXd ForceObserver::calculate_force() {
@@ -90,6 +95,24 @@ Eigen::VectorXd ForceObserver::calculate_force() {
 
     return Te;
 }
+
+Eigen::VectorXd ForceObserver::calculate_joint_accel() {
+    Eigen::VectorXd Te;
+    Te.resize(3);
+
+    Te = Ja_imu.inverse()*(accel_data - Jd_imu*robot_joint_vel);
+
+    return Te;
+}
+
+void ForceObserver::publish_accel(Eigen::VectorXd fe){
+    force_msg.force.x = fe(0);
+    force_msg.force.y = fe(1);
+    force_msg.force.z = fe(2);
+
+    force_pub.publish(force_msg);
+}
+
 
 void ForceObserver::publish_force(Eigen::VectorXd fe){
     force_msg.force.x = fe(0);

@@ -12,11 +12,13 @@
 class RobotDynamics{
 public:
     RobotDynamics();
-    Eigen::VectorXd CalcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd);
-    Eigen::VectorXd CalcN(const Eigen::VectorXd &q,const Eigen::VectorXd &qd);
-    Eigen::MatrixXd CalcM(const Eigen::VectorXd &q);
-    Eigen::MatrixXd CalcJd(const Eigen::VectorXd &q, const Eigen::VectorXd &qd);
-    Eigen::MatrixXd CalcJa(const Eigen::VectorXd &q, const Eigen::VectorXd &qd);
+    Eigen::VectorXd calcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd);
+    Eigen::VectorXd calcN(const Eigen::VectorXd &q,const Eigen::VectorXd &qd);
+    Eigen::MatrixXd calcM(const Eigen::VectorXd &q);
+    Eigen::MatrixXd calcJd(const Eigen::VectorXd &q, const Eigen::VectorXd &qd);
+    Eigen::MatrixXd calcJd_imu(const Eigen::VectorXd &q, const Eigen::VectorXd &qd);
+    Eigen::MatrixXd calcJa(const Eigen::VectorXd &q);
+    Eigen::MatrixXd calcJa_imu(const Eigen::VectorXd &q);
 };
 
 #endif //FORCE_OBSERVER_DYNAMICS_H

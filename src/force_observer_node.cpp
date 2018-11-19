@@ -21,15 +21,20 @@ int main(int argc, char **argv)
 
     // Ros Initializers
     ros::init(argc, argv, "force_observer_node");
-    ros::Rate node_rate(sample_rate);
+
 
     // Observer Initializers
     ForceObserver observer_node = ForceObserver(imu_topic, robot_topic, dof);
     observer_node.setup_position(imu_pos_filename, 2, 3);
 
+    ros::Rate node_rate(sample_rate);
+    Eigen::Vector3d joint_accel;
+
     while(ros::ok())
     {
-        //observer_node.publish_force();
+        observer_node.calculate_dynamics();
+        joint_accel = observer_node.calculate_joint_accel();
+        observer_node.publish_accel(joint_accel);
         ros::spinOnce();
         node_rate.sleep();
     }

@@ -47,7 +47,9 @@ public:
     void setup_position(const std::string imu_pos_filename, int rows, int cols);
     void calculate_dynamics();
     Eigen::VectorXd calculate_force();
+    Eigen::VectorXd calculate_joint_accel();
     void publish_force(Eigen::VectorXd fe);
+    void publish_accel(Eigen::VectorXd fe);
 
 };
 

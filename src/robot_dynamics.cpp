@@ -7,7 +7,7 @@ RobotDynamics::RobotDynamics(){
 
 }
 
-Eigen::MatrixXd RobotDynamics::CalcM(const Eigen::VectorXd &q){
+Eigen::MatrixXd RobotDynamics::calcM(const Eigen::VectorXd &q){
 
     Eigen::MatrixXd M;
     M.resize(q.size(), q.size());
@@ -46,7 +46,7 @@ Eigen::MatrixXd RobotDynamics::CalcM(const Eigen::VectorXd &q){
     return M;
 }
 
-Eigen::VectorXd RobotDynamics::CalcN(const Eigen::VectorXd &q, const Eigen::VectorXd &qd){
+Eigen::VectorXd RobotDynamics::calcN(const Eigen::VectorXd &q, const Eigen::VectorXd &qd){
 
     // N is C and G matrix together
     Eigen::VectorXd N;
@@ -101,7 +101,7 @@ Eigen::VectorXd RobotDynamics::CalcN(const Eigen::VectorXd &q, const Eigen::Vect
     return N;
 }
 
-Eigen::VectorXd RobotDynamics::CalcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd){
+Eigen::VectorXd RobotDynamics::calcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd){
 
     Eigen::VectorXd Fr;
     Fr.resize(q.size());
@@ -170,7 +170,7 @@ Eigen::VectorXd RobotDynamics::CalcFr(const Eigen::VectorXd &q, const Eigen::Vec
 
 }
 
-Eigen::MatrixXd RobotDynamics::CalcJd(const Eigen::VectorXd &q, const Eigen::VectorXd &qd) {
+Eigen::MatrixXd RobotDynamics::calcJd_imu(const Eigen::VectorXd &q, const Eigen::VectorXd &qd) {
     Eigen::MatrixXd Jd;
     Jd.resize(3, q.size());
 
@@ -183,31 +183,29 @@ Eigen::MatrixXd RobotDynamics::CalcJd(const Eigen::VectorXd &q, const Eigen::Vec
     double qd3 = qd(2);
 
     // Kinematic Jd
-    double f2 = 3.141592653589793*(1.0/2.0);
-    double f3 = q2+f2;
-    double f4 = sin(f3);
-    double f5 = q1-f2;
-    double f6 = q3+3.7E-3;
-    double f7 = cos(f3);
-    double f8 = sin(f5);
-    double f9 = cos(f5);
-
-    Jd(0,0) = 0;
-    Jd(0,1) = -qd3*f4-qd2*f6*f7;
-    Jd(0,2) = -qd2*f4;
-    Jd(1,0) = qd3*f4*f8+qd1*f4*f6*f9+qd2*f6*f7*f8;
-    Jd(1,1) = -qd3*f7*f9+qd2*f4*f6*f9+qd1*f6*f7*f8;
-    Jd(1,2) = qd1*f4*f8-qd2*f7*f9;
-    Jd(2,0) = qd3*f4*f9-qd1*f4*f6*f8+qd2*f6*f7*f9;
-    Jd(2,1) = qd3*f7*f8-qd2*f4*f6*f8+qd1*f6*f7*f9;
-    Jd(2,2) = qd1*f4*f9+qd2*f7*f8;
+    double t2 = 3.141592653589793*(1.0/2.0);
+    double t3 = q1+t2;
+    double t4 = q2-t2;
+    double t5 = sin(t4);
+    double t6 = sin(t3);
+    double t7 = q3-1.23E2/2.5E2;
+    double t8 = cos(t3);
+    double t9 = cos(t4);
+    Jd(0, 0) = -qd3*t5*t6-qd1*t5*t7*t8-qd2*t6*t7*t9;
+    Jd(0, 1) = qd3*t8*t9-qd2*t5*t7*t8-qd1*t6*t7*t9;
+    Jd(0, 2) = -qd1*t5*t6+qd2*t8*t9;
+    Jd(1, 1) = qd3*t5+qd2*t7*t9;
+    Jd(1, 2) = qd2*t5;
+    Jd(2, 0) = qd3*t5*t8-qd1*t5*t6*t7+qd2*t7*t8*t9;
+    Jd(2, 1) = qd3*t6*t9-qd2*t5*t6*t7+qd1*t7*t8*t9;
+    Jd(2, 2) = qd1*t5*t8+qd2*t6*t9;
 
     return Jd;
 }
 
-Eigen::MatrixXd RobotDynamics::CalcJa(const Eigen::VectorXd &q,const Eigen::VectorXd &qd) {
-    Eigen::MatrixXd Ja;
-    Ja.resize(3, q.size());
+Eigen::MatrixXd RobotDynamics::calcJd(const Eigen::VectorXd &q, const Eigen::VectorXd &qd) {
+    Eigen::MatrixXd Jd;
+    Jd.resize(3, q.size());
 
     double q1 = q(0);
     double q2 = q(1);
@@ -217,24 +215,77 @@ Eigen::MatrixXd RobotDynamics::CalcJa(const Eigen::VectorXd &q,const Eigen::Vect
     double qd2 = qd(1);
     double qd3 = qd(2);
 
+    // Kinematic Jd
     double t2 = 3.141592653589793*(1.0/2.0);
-    double t3 = q2+t2;
-    double t4 = sin(t3);
-    double t5 = q3+3.7E-3;
-    double t6 = q1-t2;
-    double t7 = cos(t3);
-    double t8 = cos(t6);
-    double t9 = sin(t6);
-    Ja(0,0) = 0;
-    Ja(0,1) = -t4*t5;
-    Ja(0,2) = t7;
-    Ja(1,0) = t4*t5*t9;
-    Ja(1,1) = -t5*t7*t8;
-    Ja(1,2) = -t4*t8;
-    Ja(2,0) = t4*t5*t8;
-    Ja(2,1) = t5*t7*t9;
-    Ja(2,2) = t4*t9;
+    double t3 = q2-t2;
+    double t4 = q1+t2;
+    double t5 = sin(t4);
+    double t6 = sin(t3);
+    double t7 = cos(t4);
+    double t8 = cos(t3);
+    double t9 = q3-4.318E-1;
+    Jd(0,0) = qd1*t6*t7*(-4.355E-1)-qd3*t5*t6-qd2*t5*t8*4.355E-1-qd1*t6*t7*t9-qd2*t5*t8*t9;
+    Jd(0,1) = qd1*t5*t8*(-4.355E-1)-qd2*t6*t7*4.355E-1+qd3*t7*t8-qd1*t5*t8*t9-qd2*t6*t7*t9;
+    Jd(0,2) = -qd1*t5*t6+qd2*t7*t8;
+    Jd(1,1) = qd3*t6+qd2*t8*4.355E-1+qd2*t8*t9;
+    Jd(1,2) = qd2*t6;
+    Jd(2,0) = qd1*t5*t6*(-4.355E-1)+qd3*t6*t7+qd2*t7*t8*4.355E-1-qd1*t5*t6*t9+qd2*t7*t8*t9;
+    Jd(2,1) = qd2*t5*t6*(-4.355E-1)+qd1*t7*t8*4.355E-1+qd3*t5*t8-qd2*t5*t6*t9+qd1*t7*t8*t9;
+    Jd(2,2) = qd1*t6*t7+qd2*t5*t8;
 
-    //Ja = Ja*St;
+    return Jd;
+}
+
+Eigen::MatrixXd RobotDynamics::calcJa_imu(const Eigen::VectorXd &q) {
+    Eigen::MatrixXd Ja;
+    Ja.resize(3, q.size());
+
+    double q1 = q(0);
+    double q2 = q(1);
+    double q3 = q(2);
+
+    double t2 = 3.141592653589793*(1.0/2.0);
+    double t3 = q1+t2;
+    double t4 = q2-t2;
+    double t5 = q3-1.23E2/2.5E2;
+    double t6 = cos(t3);
+    double t7 = sin(t4);
+    double t8 = cos(t4);
+    double t9 = sin(t3);
+    Ja(0, 0) = -t5*t7*t9;
+    Ja(0, 1) = t5*t6*t8;
+    Ja(0, 2) = t6*t7;
+    Ja(1, 1) = t5*t7;
+    Ja(1, 2) = -t8;
+    Ja(2, 0) = t5*t6*t7;
+    Ja(2, 1) = t5*t8*t9;
+    Ja(2, 2) = t7*t9;
+    return Ja;
+}
+
+Eigen::MatrixXd RobotDynamics::calcJa(const Eigen::VectorXd &q) {
+    Eigen::MatrixXd Ja;
+    Ja.resize(3, q.size());
+
+    double q1 = q(0);
+    double q2 = q(1);
+    double q3 = q(2);
+
+    double t2 = 3.141592653589793*(1.0/2.0);
+    double t3 = q1+t2;
+    double t4 = sin(t3);
+    double t5 = q2-t2;
+    double t6 = sin(t5);
+    double t7 = cos(t3);
+    double t8 = cos(t5);
+    double t9 = q3-4.318E-1;
+    Ja(0, 0) = t4*t6*(-4.355E-1)-t4*t6*t9;
+    Ja(0, 1) = t7*t8*4.355E-1+t7*t8*t9;
+    Ja(0, 2) = t6*t7;
+    Ja(1, 1) = t6*4.355E-1+t6*t9;
+    Ja(1, 2) = -t8;
+    Ja(2, 0) = t6*t7*4.355E-1+t6*t7*t9;
+    Ja(2, 1) = t4*t8*4.355E-1+t4*t8*t9;
+    Ja(2, 2) = t4*t6;
     return Ja;
 }
