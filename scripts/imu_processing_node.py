@@ -17,7 +17,7 @@ if __name__ == '__main__':
     rospy.init_node(name, anonymous=True)
     r = rospy.Rate(ctrl_rate)
 
-    imu = ImuDataProcessing()
+    imu = ImuDataProcessing(adc_topic='/accel')
     imu.setup_calibrated_publisher(offsets)
 
     while not rospy.is_shutdown():

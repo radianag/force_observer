@@ -8,11 +8,12 @@ import sensor_msgs.msg  as sm
 from force_observer.utils import *
 
 class ImuDataProcessing:
-    def __init__(self):
+    def __init__(self, adc_topic='/imu', output_topic='/imu_calibrated', robot_topic='/dvrk/PSM1/state_joint_current'):
         self.name = "IMU"
-        self.sub = rospy.Subscriber('/accel', std_msgs.msg.Int16MultiArray, self.callback_imu)
-        self.pub = rospy.Publisher('/accel_calibrated', gm.Accel, queue_size=1)
-        self.sub_dvrk = rospy.Subscriber('/dvrk/PSM1/state_joint_current', sm.JointState, self.callback_joint_robot)
+        self.sub = rospy.Subscriber(adc_topic, std_msgs.msg.Int16MultiArray, self.callback_imu)
+        self.sub_dvrk = rospy.Subscriber(robot_topic, sm.JointState, self.callback_joint_robot)
+
+        self.pub = rospy.Publisher(output_topic, gm.Accel, queue_size=1)
 
         self.data = np.zeros(7)
         self.g = np.array([0, 0, -9.81])
@@ -22,10 +23,23 @@ class ImuDataProcessing:
         self.robot_joint_pos = np.zeros(2)
 
     def callback_imu(self, msg):
+        # Change from ADC to actual values
         scale = 2.0 * 9.81 / 32767.0
+        scale_gyro = 250/32767.0
+
         self.data = np.array(msg.data, dtype=float)
-        self.data[1:] = self.data[1:] * scale
+        self.data[1:4] = self.data[1:4] * scale
+        self.data[4:] = self.data[4:] *scale_gyro
         #print(self.data)
+
+    def return_accel(self):
+        return self.data[1:4]
+
+    def return_gyro(self):
+        return self.data[4:7]
+
+    def return_count(self):
+        return self.data[0]
 
     def callback_joint_robot(self, msg):
         self.robot_joint_pos = msg.position[0:2]

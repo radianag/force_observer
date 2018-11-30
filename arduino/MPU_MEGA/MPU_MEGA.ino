@@ -748,6 +748,7 @@ void setup()
   MPU6050_write_reg (MPU6050_PWR_MGMT_1, 0);
  
   MPU6050_write_reg (MPU6050_ACCEL_CONFIG , MPU6050_AFS_SEL_2G);
+  MPU6050_write_reg (MPU6050_GYRO_CONFIG , MPU6050_FS_SEL_250);
 
     //nh.getHardware()->setBaud(115200);
     nh.getHardware()->setBaud(230400);
