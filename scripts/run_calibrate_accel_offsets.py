@@ -34,13 +34,13 @@ if __name__ == '__main__':
 
     num_points = q1_num_pts*q2_num_pts
 
+    # Hardare Interfaces
     p = dvrk.psm('PSM1')
     p.home()
-
     imu = ImuDataProcessing(adc_topic='/accel')
 
+    # LS Solver
     calib_accel = SolverlsAb()
-    calib_accel.setup_calibrate(ctrl_rate * stabil_ts)
     rospy.sleep(1)
 
     # Trajectory at different position of robot
@@ -59,7 +59,9 @@ if __name__ == '__main__':
     # Go to trajectory, hold, get rotation, set data for calibration
     for i in range(2):
         calib_accel.cur_num_data = 0
-        while (calib_accel.cur_num_data < num_points) and not rospy.is_shutdown():
+        next_avg = True
+        count = 0
+        while next_avg and not rospy.is_shutdown():
             if calib_accel.avg_cnt == 0:
                 p.move_joint_some(np.array([traj_q1[flat_state[calib_accel.cur_num_data][0]], traj_q2[flat_state[calib_accel.cur_num_data][1]], q3_pos]), np.array([0, 1, 2]))
                 rospy.sleep(delay_no_data)
@@ -73,7 +75,12 @@ if __name__ == '__main__':
             R2 = R1[0:3][0:3].transpose()
             x = np.matmul(R2, gravity)
             calib_accel.set_data(x, imu.return_accel())
-            calib_accel.get_avg_after_num()
+
+            if count >= ctrl_rate*stabil_ts:
+                calib_accel.get_avg_after_num()
+                next_avg = False
+
+            count = count +1
             r.sleep()
 
     calib_accel.solve_LS()

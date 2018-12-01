@@ -53,8 +53,8 @@ if __name__ == '__main__':
                     vel = dynamixel.return_velocity()
                     known_vel = np.zeros(3)
                     known_vel[cur_orient] = vel
-
                     calib_gyro.set_data(known_vel, imu.return_gyro())
+
                     if count >= ctrl_rate*stabil_ts:
                         calib_gyro.get_avg_after_num()
                         next_avg = False
