@@ -85,6 +85,8 @@ void ForceObserver::calculate_dynamics() {
 
     Ja_robot = rbt_dynamics.calcJa(robot_joint_pos);
     Jd_robot = rbt_dynamics.calcJd(robot_joint_pos, robot_joint_vel);
+
+    R_imu = rbt_dynamics.calc_imu_rot(robot_joint_pos);
 }
 
 Eigen::VectorXd ForceObserver::calculate_force() {
@@ -100,7 +102,8 @@ Eigen::VectorXd ForceObserver::calculate_joint_accel() {
     Eigen::VectorXd Te;
     Te.resize(3);
 
-    Te = Ja_imu.inverse()*(accel_data - Jd_imu*robot_joint_vel);
+    //Accel_data in body frame must be transformed to robot frame
+    Te = Ja_imu.inverse()*(R_imu*accel_data - Jd_imu*robot_joint_vel);
 
     return Te;
 }

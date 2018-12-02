@@ -105,67 +105,17 @@ Eigen::VectorXd RobotDynamics::calcFr(const Eigen::VectorXd &q, const Eigen::Vec
 
     Eigen::VectorXd Fr;
     Fr.resize(q.size());
+    float x[3];
 
-//    float x[3];
-//
-//    for (int i=0;i<3;i++)
-//    {
-//        if (abs(qd(i)) < deadband(i))
-//        {
-//            x[i] = 0;
-//        }
-//        else
-//        {
-//            if (i==2 & v_int(i) > qd(i))
-//            {
-//                // This makes it so that friction is only actuating while given a desired command
-//                x[i] = v_int(i);
-//            }
-//            else
-//            {
-//                x[i] = qd(i);
-//            }
-//
-//        }
-//    }
-//
-//    float a1 =4.0E2;
-//    float a2 =4.0E2;
-//    float scale = 1;
-//
-//
-//    float Fs_pos = 1;
-//    float Fs_neg = -1;
-//
-//
-//    //Impedance Controller
-//    float x_e = joint_des(2) - joint_act(2);
-//
-//        //MidJuly_3dof fourier test 3
-//        Fr(0) = x[0]*9.542485682180182E-2+1.0897508499757E-1/(exp(x[0]*-4.0E2)+1.0)+2.751172483473256E-1;
-//        Fr(1) = x[1]*1.63259829973678E-1+1.631162536205055E-1/(exp(x[1]*-4.0E2)+1.0)+1.937201881157299E-1;
-//
-//
-//        if(abs(qd(2)) < deadband(2))
-//        {
-//            if (x_e > pos_deadband)
-//            {
-//                Fr(2) = Fs_pos;
-//            } else if (x_e < -pos_deadband)
-//            {
-//                Fr(2) = Fs_neg;
-//            } else
-//            {
-//                Fr(2) = 0;
-//            }
-//
-//        }
-//        else {
-//            // MidJuly_3dof
-//            Fr(2) = x[2]*7.662943767346468E-1+1.069206734315578/(exp(x[2]*-4.0E2)+1.0)-3.845210662560725E-1;
-//        }
-//    Fr(2) = scale* Fr(2);
-//
+    for (int i=0;i<3;i++)
+    {
+                x[i] = qd(i);
+    }
+    //MidJuly_3dof fourier test 3
+    Fr(0) = x[0]*9.542485682180182E-2+1.0897508499757E-1/(exp(x[0]*-4.0E2)+1.0)+2.751172483473256E-1;
+    Fr(1) = x[1]*1.63259829973678E-1+1.631162536205055E-1/(exp(x[1]*-4.0E2)+1.0)+1.937201881157299E-1;
+    Fr(2) = x[2]*7.662943767346468E-1+1.069206734315578/(exp(x[2]*-4.0E2)+1.0)-3.845210662560725E-1;
+
     return Fr;
 
 }
@@ -292,4 +242,16 @@ Eigen::MatrixXd RobotDynamics::calcJa(const Eigen::VectorXd &q) {
     Ja(2, 1) = t4*t8*4.355E-1+t4*t8*t9;
     Ja(2, 2) = t4*t6;
     return Ja;
+}
+
+Eigen::Matrix3d RobotDynamics::calc_imu_rot(const Eigen::VectorXd &q) {
+    Eigen::Matrix4d T;
+    Eigen::Matrix3d R_imu;
+
+    T = modified_dh(PI/2.0, 0.0, 0.0, q(0)+PI/2) * modified_dh(-PI/2.0, 0.0, 0.0, q(1)-PI/2) *modified_dh(PI/2.0, 0.0, 0.0, 0.0);
+
+    R_imu << T(0, 0), T(0, 1), T(0, 2),
+             T(1, 0), T(1, 1), T(1, 2),
+             T(2, 0), T(2, 1), T(2, 2);
+    return R_imu;
 }

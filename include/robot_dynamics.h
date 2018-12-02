@@ -8,6 +8,8 @@
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
 #include <math.h>
+#include "utils.h"
+#define PI 3.14159265
 
 class RobotDynamics{
 public:
@@ -19,6 +21,7 @@ public:
     Eigen::MatrixXd calcJd_imu(const Eigen::VectorXd &q, const Eigen::VectorXd &qd);
     Eigen::MatrixXd calcJa(const Eigen::VectorXd &q);
     Eigen::MatrixXd calcJa_imu(const Eigen::VectorXd &q);
+    Eigen::Matrix3d calc_imu_rot(const Eigen::VectorXd &q);
 };
 
 #endif //FORCE_OBSERVER_DYNAMICS_H

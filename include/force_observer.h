@@ -32,6 +32,7 @@ private:
     Eigen::Vector3d accel_data, gyro_data;
     Eigen::Vector3d imu_position;
     Eigen::MatrixXd Ja_imu, Jd_imu;
+    Eigen::Matrix3d R_imu;
 
     Eigen::VectorXd robot_joint_pos, robot_joint_vel, robot_joint_eff;
 
