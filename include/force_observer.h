@@ -9,22 +9,24 @@
 #include <memory>
 #include <string.h>
 
+#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Geometry>
+
 #include <geometry_msgs/Accel.h>
 #include <geometry_msgs/Wrench.h>
 #include <sensor_msgs/JointState.h>
 
-#include <eigen3/Eigen/Dense>
-#include <eigen3/Eigen/Geometry>
-
+#include "kalman.h"
 #include "robot_dynamics.h"
 #include "utils.h"
+
 
 class ForceObserver {
 private:
     ros::Subscriber imu_sub, robot_joint_sub;
-    ros::Publisher  force_pub;
+    ros::Publisher  accel_pub, force_pub;
 
-    geometry_msgs::Wrench force_msg;
+    geometry_msgs::Wrench accel_msg, force_msg;
 
     RobotDynamics rbt_dynamics;
 
@@ -39,6 +41,9 @@ private:
     Eigen::VectorXd N, Fr;
     Eigen::MatrixXd M, Ja_robot, Jd_robot;
 
+    //Kalman Filter Variables
+    KalmanFilter kf;
+
     void callback_imu_calibrated(const geometry_msgs::Accel &msg);
     void callback_joint_robot(const sensor_msgs::JointState &msg);
     void calculate_jacobian_imu();
@@ -47,7 +52,8 @@ public:
     ForceObserver(const std::string imu_topic, const std::string robot_topic, const int num_dof);
     void setup_position(const std::string imu_pos_filename, int rows, int cols);
     void calculate_dynamics();
-    Eigen::VectorXd calculate_force();
+    Eigen::VectorXd calculate_force_estimate(Eigen::VectorXd measurement);
+    Eigen::VectorXd calculate_torque_from_imu();
     Eigen::VectorXd calculate_joint_accel();
     void publish_force(Eigen::VectorXd fe);
     void publish_accel(Eigen::VectorXd fe);

@@ -28,12 +28,16 @@ int main(int argc, char **argv)
     observer_node.setup_position(imu_pos_filename, 2, 3);
 
     ros::Rate node_rate(sample_rate);
-    Eigen::Vector3d joint_accel;
+    Eigen::Vector3d joint_accel, joint_torque, fe;
 
     while(ros::ok())
     {
         observer_node.calculate_dynamics();
         joint_accel = observer_node.calculate_joint_accel();
+        joint_torque = observer_node.calculate_torque_from_imu();
+        fe = observer_node.calculate_force_estimate(joint_torque);
+
+        observer_node.publish_force(fe);
         observer_node.publish_accel(joint_accel);
         ros::spinOnce();
         node_rate.sleep();

@@ -25,10 +25,39 @@ ForceObserver::ForceObserver(const std::string imu_topic, const std::string robo
     // This is the robot interface part, Makes force observer dependent?
     imu_sub = nhandle->subscribe(imu_topic, 10, &ForceObserver::callback_imu_calibrated, this);
     robot_joint_sub = nhandle->subscribe(robot_topic, 10, &ForceObserver::callback_joint_robot, this);
+    accel_pub  = nhandle->advertise<geometry_msgs::Wrench>("/force_observer/accelerations",1);
     force_pub  = nhandle->advertise<geometry_msgs::Wrench>("/force_observer/tip_forces", 1);
 
     // Robot Dynamics
     rbt_dynamics = RobotDynamics();
+
+    // Kalman Filter Variables
+    int n = 3; // Number of states
+    int m = 3; // Number of measurements
+
+    double dt = 1.0/30; // Time step
+
+    Eigen::MatrixXd A(n, n); // System dynamics matrix
+    Eigen::MatrixXd C(m, n); // Output matrix
+    Eigen::MatrixXd Q(n, n); // Process noise covariance
+    Eigen::MatrixXd R(m, m); // Measurement noise covariance
+    Eigen::MatrixXd P(n, n); // Estimate error covariance
+
+    // Discrete LTI projectile motion, measuring position only
+    A << 1, 0, 0, 0, 1, 0, 0, 0, 1;
+    C << 1, 0, 0, 0, 1, 0, 0, 0, 1;
+
+    // Reasonable covariance matrices
+    Q << .05, .05, .0, .05, .05, .0, .0, .0, .0;
+    R << 5, 0, 0, 0, 5, 0, 0, 0, 5;
+    P << .1, .1, .1, .1, 10000, 10, .1, 10, 100;
+
+    kf = KalmanFilter(dt, A, C, Q, R, P);
+
+    // Best guess of initial states
+    Eigen::VectorXd x0(n);
+    x0 << 0, 0, 0;
+    kf.init(0, x0);
 }
 
 void ForceObserver::callback_imu_calibrated(const geometry_msgs::Accel &msg){
@@ -89,33 +118,44 @@ void ForceObserver::calculate_dynamics() {
     R_imu = rbt_dynamics.calc_imu_rot(robot_joint_pos);
 }
 
-Eigen::VectorXd ForceObserver::calculate_force() {
-    Eigen::VectorXd Te, fe;
-    Te.resize(3), fe.resize(3);
+Eigen::VectorXd ForceObserver::calculate_force_estimate(Eigen::VectorXd measurement){
+    Eigen::VectorXd fe;
+    fe.resize(3);
 
-    Te = robot_joint_eff - M * Ja_imu.inverse() * (accel_data - Jd_imu*robot_joint_vel) -N - Fr;
+    // Feed measurements into filter, output estimated states
+    kf.update(measurement, Ja_robot);
+    std::cout << " x_hat[] = " << kf.state().transpose() << std::endl;
+
+    fe = kf.state();
+    return fe;
+}
+
+Eigen::VectorXd ForceObserver::calculate_torque_from_imu() {
+    Eigen::VectorXd Te;
+    Te.resize(3);
+
+    Te = robot_joint_eff - M * Ja_imu.inverse() * (R_imu*accel_data - Jd_imu*robot_joint_vel) -N - Fr;
 
     return Te;
 }
 
 Eigen::VectorXd ForceObserver::calculate_joint_accel() {
-    Eigen::VectorXd Te;
-    Te.resize(3);
+    Eigen::VectorXd acc;
+    acc.resize(3);
 
     //Accel_data in body frame must be transformed to robot frame
-    Te = Ja_imu.inverse()*(R_imu*accel_data - Jd_imu*robot_joint_vel);
+    acc = Ja_imu.inverse()*(R_imu*accel_data - Jd_imu*robot_joint_vel);
 
-    return Te;
+    return acc;
 }
 
 void ForceObserver::publish_accel(Eigen::VectorXd fe){
-    force_msg.force.x = fe(0);
-    force_msg.force.y = fe(1);
-    force_msg.force.z = fe(2);
+    accel_msg.force.x = fe(0);
+    accel_msg.force.y = fe(1);
+    accel_msg.force.z = fe(2);
 
-    force_pub.publish(force_msg);
+    accel_pub.publish(force_msg);
 }
-
 
 void ForceObserver::publish_force(Eigen::VectorXd fe){
     force_msg.force.x = fe(0);
