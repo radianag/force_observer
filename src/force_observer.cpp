@@ -25,8 +25,8 @@ ForceObserver::ForceObserver(const std::string imu_topic, const std::string robo
     // This is the robot interface part, Makes force observer dependent?
     imu_sub = nhandle->subscribe(imu_topic, 10, &ForceObserver::callback_imu_calibrated, this);
     robot_joint_sub = nhandle->subscribe(robot_topic, 10, &ForceObserver::callback_joint_robot, this);
-    accel_pub  = nhandle->advertise<geometry_msgs::Wrench>("/force_observer/accelerations",1);
-    force_pub  = nhandle->advertise<geometry_msgs::Wrench>("/force_observer/tip_forces", 1);
+    accel_pub  = nhandle->advertise<geometry_msgs::Wrench>("/force_observer/acceleration",1);
+    force_pub  = nhandle->advertise<geometry_msgs::Wrench>("/force_observer/tip_force", 1);
 
     // Robot Dynamics
     rbt_dynamics = RobotDynamics();

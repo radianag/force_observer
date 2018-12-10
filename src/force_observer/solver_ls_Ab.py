@@ -29,7 +29,7 @@ class SolverLsAb:
         else:
             self.Xb = np.concatenate((self.Xb, X), axis=0)
             self.Yb = np.concatenate((self.Yb, y))
-        print("shapes", np.shape(self.Xb), np.shape(self.Yb))
+        print("Xb shape, Yb shape", np.shape(self.Xb), np.shape(self.Yb))
 
     def _make_X(self, x):
         R = [None] * 3
@@ -46,13 +46,15 @@ class SolverLsAb:
         # Get the average after set_data many times
         avg_x = np.sum(self.x_array, axis=0) / self.avg_cnt
         avg_y = np.sum(self.y_array, axis=0) / self.avg_cnt
+        #print(avg_x)
 
         self.cur_num_data += 1
         self.avg_cnt = 0
         self.x_array = np.zeros([1, 3])
         self.y_array = np.zeros([1, 3])
 
-        X = self._make_X(np.array([avg_x[0, 0], avg_x[0, 1], avg_x[0, 2]]))
+        #X = self._make_X(np.array([avg_x[0, 0], avg_x[0, 1], avg_x[0, 2]]))
+        X = self._make_X(np.array([avg_x[0], avg_x[1], avg_x[2]]))
         self._concatenate_Xb_yb(X, avg_y)
 
     def make_csv(self, offsets_name):
@@ -64,6 +66,8 @@ class SolverLsAb:
 
     def set_data(self, x, y):
         #x and y is a list or np array, get first 3
+        #print('setting x data', x)
+        #print('setting y data', y)
         if self.avg_cnt == 0:
             self.x_array[0] = np.array([x[0], x[1], x[2]])
             self.y_array[0] = np.array([y[0], y[1], y[2]])
@@ -71,6 +75,8 @@ class SolverLsAb:
             self.x_array = np.concatenate((self.x_array, [[x[0], x[1], x[2]]]), axis=0)
             self.y_array = np.concatenate((self.y_array, [[y[0], y[1], y[2]]]), axis=0)
         self.avg_cnt += 1
+
+        #print(self.x_array)
 
     def solve_LS(self):
         self.Ab_array = np.matmul(np.linalg.pinv(self.Xb), self.Yb)
